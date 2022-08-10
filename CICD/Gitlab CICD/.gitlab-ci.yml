@@ -1,0 +1,33 @@
+stages:       
+  - build
+  - test
+image: docker:20.10.16
+variables:
+  DOCKER_DRIVER: overlay2
+before_script:
+  - docker info
+services:
+  - docker:20.10.16-dind
+
+build:  
+  stage: build
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD registry.deep-net.ru
+    - docker build -t registry.deep-net.ru/mikhail.shapowalow/docker-registry/python-api:latest .
+    - docker push registry.deep-net.ru/mikhail.shapowalow/docker-registry/python-api:latest
+  only:
+    - master
+
+test:
+  stage: test 
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD registry.deep-net.ru
+    - docker network rm my-net
+    - docker network create -d bridge my-net 
+    - docker run -d --rm --network my-net --name cent registry.deep-net.ru/mikhail.shapowalow/docker-registry/python-api:latest
+    - docker build -t test ./test/.
+    - docker run --network my-net test curl -X GET -I cent:5290/rest/api/get_info | grep 200
+    - docker stop cent 
+  only:
+    - master
+
