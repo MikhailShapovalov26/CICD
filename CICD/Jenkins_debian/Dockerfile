@@ -23,7 +23,8 @@ RUN apt-get update \
         $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
     && apt-get update \
     && apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin \
-    && rm -rf /var/lib/apt/lists/* 
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /etc/apk/cache
 ENV LANG ru_RU.utf8
 VOLUME [ "/sys/fs/cgroup" ]
 CMD ["jenkins"]
