@@ -1,0 +1,29 @@
+- name: Install Depedencies
+  ansible.builtin.apt:
+    pkg: '{{ item }}'
+    state: latest
+  loop: '{{ zsh_dependencies }}'
+    
+- name: Clone Oh-My-Zsh Repo
+  ansible.builtin.git:
+    repo: '{{ omz_repo }}'
+    dest: '{{ omz_dest }}'
+    depth: 1
+    update: true
+
+- name: Repo File Permissions
+  ansible.builtin.file:
+    path: '{{ omz_dest }}'
+    mode: 'go-w'
+    recurse: "yes" 
+
+- name: Run Install Script
+  ansible.builtin.shell:
+    chdir: '{{ omz_dest }}'
+    creates: '~/.oh-my-zsh'
+    cmd: 'sh tools/install.sh --unattended'
+
+- name: Set Zsh as Default Shell
+  user:
+    name: '{{ remote_user }}'
+    shell: /usr/bin/zsh

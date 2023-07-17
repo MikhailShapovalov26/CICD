@@ -1,0 +1,68 @@
+---
+- name: Check if gitlab-ce is installled
+  stat:
+    path: /usr/bin/gitlab-ctl
+  register: gitlab_package
+
+- name: Check if gitlab.rb exists
+  stat: 
+    path: /etc/gitlab/gitlab.rb
+  register: gitlab_rb
+
+- name: Check if gitlab repo is installed 
+  stat: 
+    path: /etc/apt/sources.list.d/gitlab_gitlab-ce.list
+  register: gitlab_repo
+
+- debug:
+    var: gitlab_package.exists
+
+- debug:
+    var: gitlab_rb.exists
+
+- debug:
+    var: gitlab_repo.exist  
+
+- name: upgrade cache 
+  apt:
+    upgrade: yes
+    update_cache: yes
+    cache_valid_time: 86400 
+# One day
+
+- name: Upgrade all packages on servers
+  apt:
+    name: "*"
+    state: latest
+
+- name: Install dependencies
+  apt:
+    name: ['curl','openssh-server','ca-certificates','tzdata', 'perl', 'postfix']
+    state: latest
+
+- name: install gitlab-ce repo pub keys
+  apt_key:
+    url: https://packages.gitlab.com/gpg.key
+    state: present
+  when: gitlab_rb.stat.exists == false
+
+- name: Install gitlab-ce ubuntu repo
+  apt_repository:
+    repo: deb https://packages.gitlab.com/gitlab/gitlab-ce/ubuntu/ {{ansible_distribution_release}} main
+    state: present
+    filename: gitlab_gitlab-ce 
+    update_cache: yes
+  when: gitlab_rb.stat.exists == false
+
+- name: install gitlab
+  apt:
+    name: gitlab-ce
+    state: present
+    update_cache: yes
+  when: gitlab_package.stat.exists == false
+
+- name: run gitlab-ctl reconfigure if a first install
+  shell: /usr/bin/gitlab-ctl reconfigure
+  when: gitlab_package.stat.exists == false
+  tags:
+    - gitlab_reconfigure

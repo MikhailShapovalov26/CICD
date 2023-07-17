@@ -1,0 +1,7 @@
+---
+zsh_dependencies:
+  - git
+  - zsh
+
+omz_repo: 'https://github.com/ohmyzsh/ohmyzsh'
+omz_dest: '/etc/ohmyzsh/'

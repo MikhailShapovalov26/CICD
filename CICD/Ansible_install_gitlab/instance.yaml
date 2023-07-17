@@ -1,0 +1,16 @@
+---
+- name: Install gitlab server ubuntu
+  hosts: gitlab_ubuntu
+  become: yes
+  become_user: root
+  remote_user: '{{ remote_user }}'
+  roles: 
+    - gitlab_install_ubuntu
+
+- name: Install zsh
+  hosts: gitlab_ubuntu
+  become: yes
+  become_user: root
+  remote_user: '{{ remote_user }}'
+  roles: 
+    - zsh
